@@ -11,6 +11,9 @@
 // Set LED_BUILTIN if it is not defined by Arduino framework
 // #define LED_BUILTIN 13
 
+// Library class that provides functionality for sending and recieving HTTP(S) requests and responses, respectively.
+WiFiClientSecure webClient;
+
 String getMacAddress() {
   // MAC addresses are 48 bits, i.e. 6 bytes.
   // We **could** read the byte representation of the MAC address into a a byte array and then convert to the string representation as in Deep's example.
@@ -20,6 +23,11 @@ String getMacAddress() {
 
 void connectWiFi() {
   Serial.print("Connecting to WiFi network");
+
+  // Sometimes a previous connection (that was not properly disconnected) can prevent the device from connecting to WiFi.
+  // Performing a disconnect here seems to fix the issue.
+  WiFi.disconnect();
+
   // Initialize WiFi radio and attempt to connect to specified SSID.
   WiFi.begin(WiFiSSID); // Add password as second parameter when on a password-protected WiFi.
   // Keep waiting/retrying till the WiFi status changes to connected.
@@ -32,6 +40,66 @@ void connectWiFi() {
   Serial.println("Successfully connected to WiFi network.");
   Serial.print("Assigned IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+// Send an HTTP POST request
+void sendPostRequest(char *host, uint16_t port, char *path, const char* hostFingerprint, char* messageBody) {
+  // Attempt to establish a connection to the server.
+  Serial.print("Attempting to connect to ");
+  Serial.println(host);
+
+  if (webClient.connect(host, port)) {
+    // Verify website's fingerprint if we are using SSL (hostFingerprint should be left NULL/empty to indicate that we are to use regular HTTP).
+    if (hostFingerprint != NULL && hostFingerprint[0] != '\0') {
+      Serial.println("TLS request; verifying host's fingerprint...");
+      if (webClient.verify(hostFingerprint, host)) {
+        Serial.println("Fingerprint was verified; commencing request.");
+      } else {
+        Serial.println("Fingerprint does not match; abandoning request.");
+        webClient.stop();
+        return;
+      }
+    }
+
+    Serial.println("Successfully connected.");
+    Serial.println("Sending HTTP POST request...");
+    
+    Serial.println("============================");
+    // Char buffer for formatting the HTTP request.
+    // Note that in the code below, client is responsible for actually performing the HTTP request, but we also print to Serial for debugging purposes.
+    char buffer[128];
+    sprintf(buffer, "POST %s HTTP/1.1", path);
+    Serial.println(buffer);
+    webClient.println(buffer);
+    sprintf(buffer, "Host: %s", host);
+    Serial.println(buffer);
+    webClient.println(buffer);
+    sprintf(buffer, "Connection: close");
+    Serial.println(buffer);
+    webClient.println(buffer);
+    Serial.println();
+    webClient.println(); // The empty line that seperates the HTTP request's header and body sections.
+    Serial.println(messageBody);
+    webClient.println(messageBody);
+    Serial.println("============================");
+
+    // Now read the server's response, character by character.
+    Serial.println("Reading server's response...");
+    Serial.println("============================");
+    while (webClient.available()) {
+      char c = webClient.read();
+      Serial.print(c);
+    }
+    Serial.println();
+    Serial.println("============================");
+    
+    // Clean up client side part of connection if connection closed by server.
+    if (!webClient.connected()) {
+      webClient.stop();
+    }
+  } else {
+    Serial.println("Connection attempt failed.");
+  }
 }
 
 void setup()
@@ -64,17 +132,21 @@ void setup()
 
 void loop()
 {
-  // turn the LED on (HIGH is the voltage level)
-  digitalWrite(LED_BUILTIN, HIGH);
+  sendPostRequest("varmarken.com", 443, "/tools/echo_post.php", varmarkenDotComFingerprint, "hello");
+  // Perform a request every 30 seconds.
+  delay(30000);
 
-  // wait for a second
-  delay(1000);
+  // // turn the LED on (HIGH is the voltage level)
+  // digitalWrite(LED_BUILTIN, HIGH);
 
-  // turn the LED off by making the voltage LOW
-  digitalWrite(LED_BUILTIN, LOW);
+  // // wait for a second
+  // delay(1000);
 
-   // wait for a second
-  delay(1000);
+  // // turn the LED off by making the voltage LOW
+  // digitalWrite(LED_BUILTIN, LOW);
+
+  //  // wait for a second
+  // delay(1000);
 
   // Serial.print("MAC address: ");
   // Serial.println(getMacAddress());
