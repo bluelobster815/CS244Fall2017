@@ -74,6 +74,9 @@ void sendPostRequest(char *host, uint16_t port, char *path, const char* hostFing
     sprintf(buffer, "Host: %s", host);
     Serial.println(buffer);
     webClient.println(buffer);
+    sprintf(buffer, "Accept-Language: en");
+    Serial.println(buffer);
+    webClient.println(buffer);
     sprintf(buffer, "Connection: close");
     Serial.println(buffer);
     webClient.println(buffer);
@@ -132,7 +135,7 @@ void setup()
 
 void loop()
 {
-  sendPostRequest("varmarken.com", 443, "/tools/echo_post.php", varmarkenDotComFingerprint, "hello");
+  sendPostRequest("varmarken.com", 443, "/tools/echo_post.php", NULL, "hello");
   // Perform a request every 30 seconds.
   delay(30000);
 
