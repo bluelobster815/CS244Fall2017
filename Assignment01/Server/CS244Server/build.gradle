@@ -2,13 +2,21 @@ group 'uci.edu.cs244.huanght.jvarmark'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'idea'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // We use JAX-RS for the REST service code.
+    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    // Let gradle now that the application server will provide the servlet jar
+    providedCompile 'org.glassfish.jersey.containers:jersey-container-servlet:2.23.1'
+
     testCompile group: 'junit', name: 'junit', version: '4.11'
+
 }

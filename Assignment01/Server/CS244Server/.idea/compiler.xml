@@ -20,8 +20,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="CS244Server_main" target="1.5" />
-      <module name="CS244Server_test" target="1.5" />
+      <module name="CS244Server_main" target="1.8" />
+      <module name="CS244Server_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
