@@ -32,8 +32,13 @@ public class CSVFileUtils {
         // Init the PrintWriter responsible for dumping data to a file on the server.
         PrintWriter writer;
         // First create file if it doesn't already exist.
-        f.createNewFile();
+        boolean created = f.createNewFile();
         writer = new PrintWriter(new FileOutputStream(f, true));
+        if (!created) {
+            // If the file already exists, it should already contain data.
+            // In this case we need to add a line break so that we don't append to the end of any previously written line
+            writer.println();
+        }
         writer.print(stringToAppend);
         // Flush stream and check for error.
         boolean errorOccurred = writer.checkError();
