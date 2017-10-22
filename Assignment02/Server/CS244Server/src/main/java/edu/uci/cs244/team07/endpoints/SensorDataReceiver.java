@@ -70,6 +70,8 @@ public class SensorDataReceiver {
                     // And create a writer for writing the streamed response.
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))
             ) {
+                // Write a header line
+                writer.write("IR1,RED1,IR2,RED2,IR3,RED3,IR4,RED4" + System.lineSeparator());
                 String l1, l2, l3, l4 = null;
                 // Files may be of different length.
                 // We only join rows (lines) as long as there is data available in all 4 files.
