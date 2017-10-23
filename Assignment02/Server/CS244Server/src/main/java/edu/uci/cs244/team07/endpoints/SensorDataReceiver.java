@@ -103,6 +103,50 @@ public class SensorDataReceiver {
     }
 
     /**
+     * Endpoint that allows for streamed download of all 0.4mA data.
+     * The output is streamed to the client as the file may be large, hence we do not want to load all data into memory.
+     * @return A response that streams the output to the client.
+     */
+    @Path("/400uA")
+    @GET
+    public Response download400uASensorReadings() {
+        return streamSingleDataFile(fileName400uA);
+    }
+
+    /**
+     * Endpoint that allows for streamed download of all 6.4mA data.
+     * The output is streamed to the client as the file may be large, hence we do not want to load all data into memory.
+     * @return A response that streams the output to the client.
+     */
+    @Path("/6400uA")
+    @GET
+    public Response download6400uASensorReadings() {
+        return streamSingleDataFile(fileName6400uA);
+    }
+
+    /**
+     * Endpoint that allows for streamed download of all 25.4mA data.
+     * The output is streamed to the client as the file may be large, hence we do not want to load all data into memory.
+     * @return A response that streams the output to the client.
+     */
+    @Path("/25400uA")
+    @GET
+    public Response download25400uASensorReadings() {
+        return streamSingleDataFile(fileName25400uA);
+    }
+
+    /**
+     * Endpoint that allows for streamed download of all 50.0mA data.
+     * The output is streamed to the client as the file may be large, hence we do not want to load all data into memory.
+     * @return A response that streams the output to the client.
+     */
+    @Path("/50000uA")
+    @GET
+    public Response download50000uASensorReadings() {
+        return streamSingleDataFile(fileName50000uA);
+    }
+
+    /**
      * Endpoint for uploading 0.4mA readings.
      *
      * @param sensorReadings
@@ -168,6 +212,35 @@ public class SensorDataReceiver {
     public Response uploadSensorData50000uA(String sensorReadings) {
         String filePath = String.format("%s/%s", UPLOAD_DIRECTORY, fileName50000uA);
         return processUploadRequest(filePath, sensorReadings);
+    }
+
+    /**
+     * Constructs a response that will stream the content of a single current-specific data file.
+     * @param fileName The name of the file to be streamed.
+     * @return A response that will stream the content of a single current-specific data file.
+     */
+    private Response streamSingleDataFile(String fileName) {
+        StreamingOutput responseStream = output -> {
+            // Open a reader for the file that contains the current-specific sensor data.
+            // Use try-with: resources are automatically closed after use. No need to call close().
+            try (BufferedReader reader = Files.
+                    newBufferedReader(Paths.get(String.format("%s/%s", UPLOAD_DIRECTORY, fileName)));
+                 // And create a writer for writing the streamed response.
+                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))) {
+                // Write a header line
+                writer.write("IR,RED" + System.lineSeparator());
+                String dataLine = null;
+                while ((dataLine = reader.readLine()) != null) {
+                    // Line should already be in CSV format.
+                    // All we need to do is to add the linebreaks as these are removed by the readLine() call.
+                    // Output the line to the client.
+                    writer.write(dataLine + System.lineSeparator());
+                }
+                // Flush the stream to ensure that client receives the data.
+                writer.flush();
+            }
+        };
+        return Response.ok(responseStream).build();
     }
 
     /**

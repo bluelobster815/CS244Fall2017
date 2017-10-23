@@ -8,17 +8,16 @@
     <link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body>
-<!-- Center everything on page -->
 <div id="wrapper">
-<h1>All readings combined in one chart</h1>
+<h1>6.4mA readings</h1>
 <div id="graphdiv"></div>
 <script type="text/javascript">
     g = new Dygraph(
 
             // containing div
             document.getElementById("graphdiv"),
-            // point to aggregate dataset endpoint using a relative path
-            "../webapi/data/all"
+            // point to current-specific endpoint using a relative path
+            "../webapi/data/6400uA"
     );
 </script>
 </div>
