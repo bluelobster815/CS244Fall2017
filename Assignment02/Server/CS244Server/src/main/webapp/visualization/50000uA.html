@@ -2,23 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Combined Visualization</title>
+    <title>50.0mA Visualization</title>
     <script src="//cdnjs.cloudflare.com/ajax/libs/dygraph/2.0.0/dygraph.min.js"></script>
     <link rel="stylesheet" src="//cdnjs.cloudflare.com/ajax/libs/dygraph/2.0.0/dygraph.min.css" />
     <link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body>
-<!-- Center everything on page -->
 <div id="wrapper">
-    <h1>50.0mA readings</h1>
-    <div id="graphdiv"></div>
+    <div id="graphdiv" class="chart"></div>
     <script type="text/javascript">
         g = new Dygraph(
 
                 // containing div
                 document.getElementById("graphdiv"),
                 // point to current-specific endpoint using a relative path
-                "../webapi/data/50000uA"
+                "../webapi/data/50000uA",
+                // Options for styling the chart
+                {
+                    title: '50.0mA readings',
+                    xlabel: 'Relative time (s)',
+                    ylabel: 'IR/RED value',
+                    yLabelWidth: 10,
+                    strokeWidth: 1.5
+                }
         );
     </script>
 </div>

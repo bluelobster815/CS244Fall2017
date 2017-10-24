@@ -8,19 +8,26 @@
     <link rel="stylesheet" type="text/css" href="../css/main.css" />
 </head>
 <body>
-<!-- Center everything on page -->
 <div id="wrapper">
-<h1>All readings combined in one chart</h1>
-<div id="graphdiv"></div>
-<script type="text/javascript">
-    g = new Dygraph(
+    <div id="graphdiv" class="chart"></div>
+    <script type="text/javascript">
+        g = new Dygraph(
 
-            // containing div
-            document.getElementById("graphdiv"),
-            // point to aggregate dataset endpoint using a relative path
-            "../webapi/data/all"
-    );
-</script>
+                // containing div
+                document.getElementById("graphdiv"),
+                // point to aggregate dataset endpoint using a relative path
+                "../webapi/data/all",
+                // Options for styling the chart
+                {
+                    title: 'All current-specific readings in one chart',
+                    xlabel: 'Relative time (s)',
+                    ylabel: 'IR/RED value',
+                    yLabelWidth: 10,
+                    strokeWidth: 1.5
+                }
+
+        );
+    </script>
 </div>
 </body>
 </html>

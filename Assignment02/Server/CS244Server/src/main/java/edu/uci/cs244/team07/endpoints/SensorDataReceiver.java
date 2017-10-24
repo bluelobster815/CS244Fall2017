@@ -71,8 +71,13 @@ public class SensorDataReceiver {
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))
             ) {
                 // Write a header line
-                writer.write("IR1,RED1,IR2,RED2,IR3,RED3,IR4,RED4" + System.lineSeparator());
+                writer.write("Time,IR1,RED1,IR2,RED2,IR3,RED3,IR4,RED4" + System.lineSeparator());
                 String l1, l2, l3, l4 = null;
+                // We must plot IR and RED against time. In this assignment we only consider
+                // relative time, i.e. we assume that readings are stored in the order they
+                // were taken and that they all come from the same sensor. Hence there must
+                // be 0.02s between each as we are sampling at 50Hz. We start at t=0.
+                double time = 0.0;
                 // Files may be of different length.
                 // We only join rows (lines) as long as there is data available in all 4 files.
                 while ((l1 = r1.readLine()) != null &&
@@ -80,9 +85,12 @@ public class SensorDataReceiver {
                         (l3 = r3.readLine()) != null &&
                         (l4 = r4.readLine()) != null) {
                     // Join the data spread across the four files into one row (line).
-                    String combinedRow = String.format("%s,%s,%s,%s%s", l1, l2, l3, l4, System.lineSeparator());
+                    // Also add a relative-time timestamp.
+                    String combinedRow = String.format("%f,%s,%s,%s,%s%s", time, l1, l2, l3, l4, System.lineSeparator());
                     // Output to the client.
                     writer.write(combinedRow);
+                    // Increment the relative time so that it is ready for the next line.
+                    time += 0.02;
                 }
                 // Flush the stream to ensure that client receives the data.
                 writer.flush();
@@ -228,13 +236,20 @@ public class SensorDataReceiver {
                  // And create a writer for writing the streamed response.
                  BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output))) {
                 // Write a header line
-                writer.write("IR,RED" + System.lineSeparator());
+                writer.write("Time,IR,RED" + System.lineSeparator());
+                // We must plot IR and RED against time. In this assignment we only consider
+                // relative time, i.e. we assume that readings are stored in the order they
+                // were taken and that they all come from the same sensor. Hence there must
+                // be 0.02s between each as we are sampling at 50Hz. We start at t=0.
+                double time = 0.0;
                 String dataLine = null;
                 while ((dataLine = reader.readLine()) != null) {
-                    // Line should already be in CSV format.
-                    // All we need to do is to add the linebreaks as these are removed by the readLine() call.
+                    // Line should already be in CSV format, but we need to add the timestamp.
+                    // We also have to add linebreaks as these are removed by the readLine() call.
                     // Output the line to the client.
-                    writer.write(dataLine + System.lineSeparator());
+                    writer.write(String.format("%f,%s%s", time, dataLine, System.lineSeparator()));
+                    // increment relative time for next line
+                    time += 0.02;
                 }
                 // Flush the stream to ensure that client receives the data.
                 writer.flush();
