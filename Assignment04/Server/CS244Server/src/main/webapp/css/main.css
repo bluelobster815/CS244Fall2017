@@ -1,0 +1,16 @@
+#wrapper {
+    width: 960px;     /* specify a width! */
+    margin: 0 auto; /* center */
+}
+
+.dygraph-legend { text-align: right; background: none; }
+
+.dygraph-label { font-family: Georgia, Verdana, serif; }
+
+.dygraph-title { font-size: 24px; text-shadow: gray 2px 2px 2px; text-align: center; }
+
+.dygraph-ylabel { font-size: 12px; text-shadow: gray 2px 2px 2px; rotation: 90deg; }
+
+.dygraph-xlabel { font-size: 12px; text-shadow: gray 2px 2px 2px; text-align: center; }
+
+.chart { width: 600px; height: 300px; margin: 5px 5px 5px 50px; padding: 2px; }
