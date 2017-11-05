@@ -1,3 +1,9 @@
+/**
+ * CS244 Assignment 4 - Work with 3D Accelerometer
+ * 
+ * Team #7 
+ *
+ */
 #include "SparkFunLIS3DH.h"
 #include "Wire.h"
 #include "SPI.h"
@@ -7,13 +13,13 @@
 #include "ESP8266HTTPClient.h"
 #include "stdio.h"
 
-#include "ets_sys.h"
-#include "os_type.h"
+// #include "ets_sys.h"
+// #include "os_type.h"
 
-extern "C" {
-#include "user_interface.h"
-}
-uint32_t freeHeapSize = system_get_free_heap_size();
+// extern "C" {
+// #include "user_interface.h"
+// }
+// uint32_t freeHeapSize = system_get_free_heap_size();
 
 #define BUF_SIZE 100
 #define MESSAGE_SIZE 50
@@ -32,36 +38,41 @@ volatile uint32_t sampleNumber = 0;
 volatile int overflowCount = 0;
 bool debugMode = false;
 
-// os_timer_t myTimer;
 LIS3DH accelerometer(SPI_MODE, 16); //Constructing with SPI interface information
-//LIS3DH accelerometer(I2C_MODE, 0x19); //Alternate constructor for I2C
 
 void enq(int16_t valueX, int16_t valueY, int16_t valueZ);
 void deq(int16_t *valueX, int16_t *valueY, int16_t *valueZ);
 
 void sensorISR(){
 
-   // Serial.println("interrup fired!");
    // uint8_t fifoUnreadSamples = ( accelerometer.fifoGetStatus() & 0x1F );
    // uint8_t samplesToGet = fifoUnreadSamples < 20 ? fifoUnreadSamples : 20;
    
-   while(( accelerometer.fifoGetStatus() & 0x20 ) == 0) //This checks for the 'empty' flag
+   // while the device FIFO empty flag is not set
+   while(( accelerometer.fifoGetStatus() & 0x20 ) == 0)
    {
       int16_t xsample = accelerometer.readRawAccelX();
       int16_t ysample = accelerometer.readRawAccelY();
       int16_t zsample = accelerometer.readRawAccelZ();
-      enq(xsample,ysample,zsample );
+      enq(xsample,ysample,zsample);
       sampleNumber++;
+      
+      // this reset may not be necessary
       wdt_reset();
+
+      // for debugging
       if(debugMode) {
          Serial.print("sample count since last parse: ");
          Serial.println(sampleNumber);
       }
+
    }
 
 }
 
+// panic message for debugging
 void uhoh(char* message) {
+   Serial.println("UH OH SOMETHING REALLY BAD HAPPENED");
    Serial.println(message);
    Serial.print("sample number = ");
    Serial.println(sampleNumber);
@@ -165,16 +176,7 @@ void sendPostRequest(char *host, uint16_t port, char *path, char *messageBody) {
 
 }
 
-void setup() {
-   // put your setup code here, to run once:
-   Serial.begin(9600);
-   delay(1000); //relax...
-   Serial.println("===   Booting...  ===");
-
-   Serial.print("free heap size = ");
-   Serial.println(freeHeapSize);
-
-   connectWiFi();
+void configureSensor(){
 
    accelerometer.settings.adcEnabled = 0;
    //Note:  By also setting tempEnabled = 1, temperature data is available
@@ -189,7 +191,7 @@ void setup() {
 
    //FIFO control settings
    accelerometer.settings.fifoEnabled = 1;
-   accelerometer.settings.fifoThreshold = 20;  //Can be 0 to 32
+   accelerometer.settings.fifoThreshold = 10;  //Can be 0 to 32
    accelerometer.settings.fifoMode = 2;
    //fifoMode can be:
    //  0 (Bypass mode, FIFO off)
@@ -217,12 +219,24 @@ void setup() {
    // Serial.println(registerData, BIN);
    accelerometer.writeRegister(LIS3DH_CTRL_REG3, registerData);
 
+}
+
+void setup() {
+
+   delay(3000);
+
+   Serial.begin(9600);   
+   Serial.println("===   Booting...  ===");
+
+   // Serial.print("free heap size = ");
+   // Serial.println(freeHeapSize);
+
+   connectWiFi();
+   configureSensor();   
+
    // configure ESP8266 external interrupt
    pinMode(4, INPUT);
    attachInterrupt(digitalPinToInterrupt(4), sensorISR, RISING);
-
-   // os_timer_setfn(&myTimer, (os_timer_func_t *)sensorISR, NULL);
-   // os_timer_arm(&myTimer, 100, true);
 
    Serial.println("=== Boot completed ===");
   
@@ -264,18 +278,21 @@ void loop()
          Serial.print("bufferCount = ");
          Serial.println(bufferCount);
 
+         // disable external interrupt for critical section in loop so that
+         // it does not try to read from buffers while ISR is writing to them
          detachInterrupt(4);
-         // os_timer_disarm(&myTimer);
          for( int i = 0; i < MESSAGE_SIZE; i++ ) {
+            // retrieve samples from buffer and convert to CSV formatted string
             deq(&x_sample, &y_sample, &z_sample);
             sprintf(entry, "%d,%d,%d\n", x_sample, y_sample, z_sample);
             strcat(message,entry);
          }
-         // os_timer_arm(&myTimer, 100, true);
          attachInterrupt(digitalPinToInterrupt(4), sensorISR, RISING);
 
+         // send CSV formatted string to server in HTTP POST request
          sendPostRequest(hostip, 8080, serverPath, message);
 
+         // re-initialize message buffer
          memset(message, 0, sizeof(message));
          message[0] = '\0';
 
@@ -295,8 +312,9 @@ void loop()
    Serial.print(bufferCount);
    Serial.println(" samples left in the buffer.");
 
-   // os_timer_disarm(&myTimer);
    detachInterrupt(4);
+
+   // convert any remaining samples in buffer to CSV formatted string and send to server
    while ( bufferCount > 0 ) {
 
       for( int i = 0; i < MESSAGE_SIZE; i++ ) {
@@ -316,7 +334,7 @@ void loop()
    Serial.println("Done!! Wait forever...............................");
 
    while(1){
-      wdt_reset();
+      wdt_reset(); // needed to prevent watchdog timers from resetting the board
    }
 
 }
