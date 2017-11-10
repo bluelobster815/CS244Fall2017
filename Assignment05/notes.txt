@@ -1,0 +1,72 @@
+
+
+##results
+- Results show the parameters for the svc model fitting
+- Main parameters for consideration are C and gamma.
+- Scores are the accuracy in the range of 0 to 1.0
+
+1. Features: x,y z; five fold cross validation
+
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+Scores: [ 0.94911111  0.94        0.926       0.88644444  0.93044444]
+
+
+2.  Features: x,y z; 2/3 training data, 1/3 test data;  C=1, gamma=1/n_features  [**best fit model**]
+
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+score: 0.9468
+accuracy: 94.68 %
+
+3. Features: x,y z; 2/3 training data, 1/3 test data; C=100, gamma=0.1  (Reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3795931/;  These parameters are listed as the best parameters in the reference)
+
+SVC(C=100, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma=0.1, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+score: 0.944666666667
+accuracy: 94.4666666667 %
+
+4. Features: Signal magnitude vector(magnitude sqrt(x*x+y*y+z*z)); five fold cross validataion
+
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+scores: [ 0.54355556  0.54155556  0.51444444  0.53444444  0.52711111]
+
+
+-----------------------------------------
+
+
+@- Classify on Accelerometer data with minimal error 
+-  SVM, parameters C=1.0, gamma=1/n_features  
+
+@- Report your classification error
+- error ~5.32%
+
+@- Explanation about the extracted features 
+- using two different features sets:
+- Using the x, y, z components as features  [**best features set**]
+- Signal Magnitude vector (SVM): sqrt(x*x+y*y+z*z)
+
+
+@- Explanation on the method of classification 
+- python packages used:scikit learn, numpy
+- SVM(state vector machine):  kernel: rbf (radial basis function), upper complexity bound C = 1.0 , gamma = 1/n_features 
+- method of classification: 2/3 data used for training and 1/3rd used for testing (accuracy ~94.68%)
+- scikit-learn GridSearchCV used to test for the best fit model for the data
+- scikit-learn cross_val_score used to cross validate the model 
+
+
+
+
