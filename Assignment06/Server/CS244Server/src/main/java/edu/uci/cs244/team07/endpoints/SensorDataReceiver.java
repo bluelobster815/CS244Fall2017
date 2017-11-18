@@ -32,6 +32,11 @@ public class SensorDataReceiver {
     private static final String UPLOAD_DIRECTORY = System.getProperty(SYSTEM_PROPERTY_UPLOAD_DIRECTORY);
 
     /**
+     * Name of file where we store sensors readings obtained by sampling from both sensors at the same time.
+     */
+    private static String fileNameDualSensorReadings = "ppg_acc_combined.csv";
+
+    /**
      * Name of file where we store accelerometer readings.
      */
     private static String fileNameAcceleration = "acceleration.csv";
@@ -56,6 +61,22 @@ public class SensorDataReceiver {
      */
     private static String fileName50000uA = "50000uA.csv";
 
+
+    /**
+     * Endpoint for uploading dual sensor readings, i.e. sensor readings obtained by sampling from both the PPG sensor
+     * and the accelerometer at the same time.
+     *
+     * @param dualSensorReadings
+     *         A CSV-style formatted string with accelerometer and PPG readings.
+     * @return A 200 HTTP response if the data was successfully stored on the server. A 500 Internal Server Error if the
+     * server is unable to store the data (e.g. in case the server process cannot access the file).
+     */
+    @Path("/dualsensors")
+    @POST
+    public Response uploadDualSensorReadings(String dualSensorReadings) {
+        String filePath = String.format("%s/%s", UPLOAD_DIRECTORY, fileNameDualSensorReadings);
+        return processUploadRequest(filePath, dualSensorReadings);
+    }
 
     /**
      * Endpoint for uploading accelerometer readings.
