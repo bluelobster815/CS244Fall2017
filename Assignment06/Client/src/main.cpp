@@ -11,7 +11,7 @@
 
 #define BUF_SIZE 100
 #define MESSAGE_SIZE 50
-#define SAMPLE_WINDOW_MS 1000 * 600
+#define SAMPLE_WINDOW_MS 600000 //5 * 1000 //5000 //1000 * 600
 
 // IR reading is 18 bits unsigned = 6 chars
 // Red reading is also 18 bits unsigned
